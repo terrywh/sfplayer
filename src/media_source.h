@@ -15,7 +15,7 @@ public:
     class frame_pool {
     public:
         frame_pool()
-        : free_(64) {}
+        : free_(24) { }
         // 
         ~frame_pool() {
             free_.consume_all([] (AVFrame* f) {
@@ -24,19 +24,41 @@ public:
         }
         //
         frame_t prepare() {
-            if(free_.empty()) 
-                return frame_t(av_frame_alloc());
-            else {
-                AVFrame* f;
-                free_.pop(f);
-                return frame_t(f);
+            AVFrame* f = nullptr;
+            if(!free_.pop(f)) {
+                f = av_frame_alloc();
+                assert(f);
             }
+            assert(f);
+            return frame_t(f);
         }
         void recycle(frame_t& f) {
+            if(!f) return;
+            assert(!!f);
             if(free_.push(f)) f.detach();
         }
     private:
         boost::lockfree::queue<AVFrame*> free_;
+    };
+    class frame_queue {
+    public:
+        bool push(frame_t& f) {
+            if(queue_.push(f)) {
+                f.detach();
+                return true;
+            }
+            return false;
+        }
+        frame_t pop() {
+            AVFrame* f;
+            if(queue_.pop(f)) return frame_t(f);
+            else return frame_t(nullptr);
+        }
+        bool empty() {
+            return queue_.empty();
+        }
+    private:
+        boost::lockfree::queue<AVFrame*,boost::lockfree::capacity<32>> queue_;
     };
 
     media_source(const char* uri);
@@ -56,13 +78,10 @@ public:
     void play();
     void stop();
     template <class Fn>
-    void next_video_frame(Fn&& fn) {
-        frame_t f; // 使用 frame_t 防止 fn 失败时造成 frame 的内存泄漏
-        if(!video_.pop(f.data())) fn(nullptr);
-        else {
-            fn(f);
-            pool_.recycle(f);
-        }
+    void next_vframe(Fn&& fn) {
+        frame_t f = video_.pop();
+        fn(f);
+        pool_.recycle(f);
     }
 
     bool more();
@@ -81,8 +100,8 @@ private:
 
     int              vidx_ = -1;
     int              aidx_ = -1;
-    boost::lockfree::queue<AVFrame*, boost::lockfree::capacity<64>> video_;
-    boost::lockfree::queue<AVFrame*, boost::lockfree::capacity<64>> audio_;
+    frame_queue video_;
+    frame_queue audio_;
 
     std::unique_ptr<std::thread> worker_;
     void decode();

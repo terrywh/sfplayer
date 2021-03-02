@@ -54,9 +54,10 @@ void application::handle_event() {
             }
             break;
         case kOnOpenMedia:
-            player_->play(
-                std::make_unique<media_source>(static_cast<const char*>(event_.user.data1))
-            );
+            player_->play(static_cast<const char*>(event_.user.data1));
+            break;
+        case kOnMediaDone:
+            player_->stop();
         }
     }
 }

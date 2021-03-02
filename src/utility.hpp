@@ -32,7 +32,11 @@ public:
     wrapper(T* t)
     : t_(t) {}
 
-    wrapper(const wrapper& w) = default;
+    wrapper(const wrapper& w) {
+        t_ = w.t_;
+        std::cout << "copy wrapper\n";
+    }
+
     wrapper(wrapper&& w) {
         t_ = w.t_;
         w.t_ = nullptr;
@@ -48,6 +52,10 @@ public:
 
     T* operator ->() const {
         return t_;
+    }
+
+    bool operator !() const {
+        return t_ == nullptr;
     }
 
     void detach() {

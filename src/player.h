@@ -8,6 +8,9 @@ class media_source;
 
 class player {
 public:
+    
+
+
     player();
     ~player();
 
@@ -25,19 +28,14 @@ public:
     void fullscreen(bool full = true);
     void toggle_fullscreen();
 
-    void play(std::unique_ptr<media_source> src);
+    void play(const char* uri);
     void stop();
-protected:
-    void render(SDL_Renderer* r);
 private:
-    SDL_Window* window_;
-    boundary_t  window_size;
-    SDL_Rect    view_;
-
-    SDL_TimerID   render_timer;
+    SDL_Window*   window_;
     SDL_Renderer* render_;
-    SDL_Texture*  texture_ = nullptr;
-    std::unique_ptr<media_source> source_;
+    boundary_t  window_size;
+
+    std::shared_ptr<media_source> source_;
     std::uint32_t status_;
 
     friend class media_source;

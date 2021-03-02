@@ -15,6 +15,7 @@ public:
         kPlaying = 0x00000002,
 
         kOnOpenMedia = SDL_USEREVENT + 1,
+        kOnMediaDone = SDL_USEREVENT + 2,
     };
 private:
     std::uint32_t status_ = 0;

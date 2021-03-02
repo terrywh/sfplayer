@@ -19,6 +19,7 @@ media_source::~media_source() {
     // status_ |= kStopping;
     stop();
     worker_->join();
+    std::cout << "~media_source\n";
 }
 
 AVStream* media_source::video() const {
@@ -80,10 +81,7 @@ void media_source::decode() {
                 r = avcodec_receive_frame(*vctx_, f);
                 if(r < 0) break;
                 while(true) {
-                    if(video_.push(f)) {
-                        f.detach();
-                        break;
-                    }
+                    if(video_.push(f)) break;
                     else if(status_ & kStopping) break;
                     else SDL_Delay(5);
                 }
