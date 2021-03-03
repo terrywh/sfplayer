@@ -3,8 +3,8 @@
 
 
 ## todo
-
-[x] 1. basic sdl application;
-[x] 2. basic video play;
-[ ] 4. basic audio play;
-[ ] 5. video / audio play in sync;
+- [x] 1. basic sdl application;
+- [x] 2. basic video play;
+- [x] 3. basic audio play;
+- [ ] 4. seperate video / audio play;
+- [ ] 5. sync video / audio play;

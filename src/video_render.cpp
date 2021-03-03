@@ -14,7 +14,7 @@ video_render::video_render(std::shared_ptr<media_source> src, SDL_Renderer* r, S
     SDL_GetWindowSize(win, &w, &h);
     dview_ = {0, 0, w, h};
     
-    timer_ = SDL_AddTimer(1000/source_->fps(), [] (std::uint32_t interval, void* data) -> std::uint32_t {
+    timer_ = SDL_AddTimer(1000/source_->video_rate(), [] (std::uint32_t interval, void* data) -> std::uint32_t {
         auto self = static_cast<video_render*>(data);
         return self->do_render();
     }, this);
@@ -42,5 +42,5 @@ std::uint32_t video_render::do_render() {
         }
     });
     SDL_RenderPresent(render_);
-    return 1000/source_->fps();
+    return 1000/source_->video_rate();
 }

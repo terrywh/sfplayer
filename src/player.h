@@ -34,7 +34,6 @@ private:
     SDL_Window*   window_;
     SDL_Renderer* render_;
     boundary_t  window_size;
-
     std::shared_ptr<media_source> source_;
     std::uint32_t status_;
 

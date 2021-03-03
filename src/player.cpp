@@ -1,6 +1,7 @@
 #include "player.h"
 #include "media_source.h"
 #include "video_render.h"
+#include "audio_player.h"
 
 player::player()
 : window_size {640, 480}
@@ -26,7 +27,7 @@ void player::show() {
 void player::resize(std::pair<int,int> s) {
     SDL_SetWindowSize(window_, s.first, s.second);
     SDL_GetWindowSize(window_, &window_size.w, &window_size.h);
-    std::cout << window_size.w << "x" << window_size.h << "px\n";
+    // std::cout << window_size.w << "x" << window_size.h << "px\n";
 }
 
 void player::fullscreen(bool full) {
@@ -40,7 +41,6 @@ void player::fullscreen(bool full) {
     }
 
     SDL_GetWindowSize(window_, &window_size.w, &window_size.h);
-    std::cout << window_size.w << "x" << window_size.h << "px\n";
 }
 
 void player::toggle_fullscreen() {
@@ -52,6 +52,8 @@ void player::play(const char* uri) {
     source_.reset(new media_source(uri));
     if(source_->has_video())
         new video_render(source_, render_, window_);
+    if(source_->has_audio())
+        new audio_player(source_);
     
     source_->play();
 }

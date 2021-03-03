@@ -21,56 +21,78 @@ private:
     T fn_;
 };
 
-
 template <typename T, void (*F)(T**)>
 class wrapper {
 public:
+    using value_type = T;
+    
     wrapper()
-    : t_(nullptr) {
+    : x_(nullptr)
+    , t_(&x_) {
 
     }
-    wrapper(T* t)
-    : t_(t) {}
+
+    wrapper(value_type* t)
+    : x_(t)
+    , t_(&x_) {}
+
+    wrapper(T** t)
+    : x_(nullptr)
+    , t_(t) {}
 
     wrapper(const wrapper& w) {
+        // std::cout << "wrapper copy\n";
+        x_ = w.x_;
         t_ = w.t_;
-        std::cout << "copy wrapper\n";
     }
 
     wrapper(wrapper&& w) {
-        t_ = w.t_;
+        // std::cout << "wrapper move\n";
+        if(w.t_ == &w.x_) {
+            x_ = w.x_;
+            t_ = &x_;
+        }
+        else {
+            x_ = nullptr;
+            t_ = w.t_;
+        }
+        w.x_ = nullptr;
         w.t_ = nullptr;
     }
 
-    operator T*() const {
+    operator bool() const {
+        return *t_ != nullptr;
+    }
+
+    operator value_type*() const {
+        return *t_;
+    }
+
+    operator value_type**() const {
         return t_;
     }
 
-    operator T**() {
-        return &t_;
-    }
-
-    T* operator ->() const {
-        return t_;
-    }
-
-    bool operator !() const {
-        return t_ == nullptr;
+    value_type* operator ->() const {
+        return *t_;
     }
 
     void detach() {
+        x_ = nullptr;
         t_ = nullptr;
     }
 
     T*& data() {
-        return t_;
+        return *t_;
     }
 
     ~wrapper() {
-        if(t_) F(&t_);
+        if(!t_ || !(*t_)) return;
+        assert(!!t_ && !!(*t_));
+        F(t_);
     }
 private:
-    T* t_;
+    value_type*  x_;
+    value_type** t_;
 };
 
 #define AV_THROW(error, style, ...) do { \
